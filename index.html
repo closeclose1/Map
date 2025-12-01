@@ -17,7 +17,7 @@
         myChart.showLoading();
 
         // 【修改点】使用 jsDelivr CDN 加速的 GitHub 托管数据，解决跨域问题
-        const chinaGeoJsonUrl = 'https://cdn.jsdelivr.net/gh/yangle/ChinaMap/json/china.json';
+        const chinaGeoJsonUrl = './china.json';
 
         fetch(chinaGeoJsonUrl)
             .then(response => {

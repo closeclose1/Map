@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国地图交互展示</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; }
+        #map-container { width: 100%; height: 100%; max-width: 1200px; }
+    </style>
+</head>
+<body>
+    <div id="map-container"></div>
+    <script>
+        var myChart = echarts.init(document.getElementById('map-container'));
+        myChart.showLoading();
+
+        // 【修改点】使用 jsDelivr CDN 加速的 GitHub 托管数据，解决跨域问题
+        const chinaGeoJsonUrl = 'https://cdn.jsdelivr.net/gh/yangle/ChinaMap/json/china.json';
+
+        fetch(chinaGeoJsonUrl)
+            .then(response => {
+                // 增加一个错误检查，防止 HTTP 错误被忽略
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                return response.json();
+            })
+            .then(geoJson => {
+                myChart.hideLoading();
+                echarts.registerMap('china', geoJson);
+                var option = {
+                    title: { text: '中国地图交互展示', subtext: '鼠标移动查看高亮效果', left: 'center', top: 20 },
+                    tooltip: { trigger: 'item', formatter: '{b}' },
+                    series: [{
+                        name: '中国',
+                        type: 'map',
+                        map: 'china',
+                        roam: true,
+                        label: { show: true, color: '#333', fontSize: 10 },
+                        itemStyle: { areaColor: '#e0e6f1', borderColor: '#fff', borderWidth: 1 },
+                        emphasis: {
+                            label: { show: true, color: '#fff' },
+                            itemStyle: { areaColor: '#ff5722', shadowBlur: 10, shadowColor: 'rgba(0, 0, 0, 0.5)' }
+                        },
+                        data: []
+                    }]
+                };
+                myChart.setOption(option);
+            })
+            .catch(error => {
+                console.error('地图数据加载失败:', error);
+                myChart.hideLoading();
+                // 在页面上直接显示错误信息，方便调试
+                document.getElementById('map-container').innerHTML = 
+                    '<div style="text-align:center; color:red; padding-top:20%;">地图数据加载失败，请刷新重试。<br>错误详情: ' + error.message + '</div>';
+            });
+
+        window.addEventListener('resize', function() { myChart.resize(); });
+    </script>
+</body>
+</html>
